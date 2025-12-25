@@ -2,16 +2,121 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 // import 'package:fl_chart/fl_chart.dart';
 import 'package:final_year_project/screens/transactions_screen.dart';
+import 'package:final_year_project/screens/scan_receipt_screen.dart';
+import 'package:final_year_project/screens/budget_management_screen.dart';
+import 'package:final_year_project/screens/spending_insights_screen.dart';
+import 'package:final_year_project/screens/transaction_insight_screen.dart';
+import 'package:final_year_project/screens/transaction_detail_screen.dart';
 
-class DashboardScreen extends StatelessWidget {
+import 'package:final_year_project/screens/notifications_screen.dart';
+import 'package:final_year_project/screens/ai_assistant_screen.dart';
+import 'package:final_year_project/screens/settings_screen.dart';
+
+class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
 
   @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  int _selectedIndex = 0;
+
+  @override
   Widget build(BuildContext context) {
+    // Screens logic
+    final List<Widget> _screens = [
+      _buildHomeContent(),     // Index 0: Home
+      const Center(child: Text("Analytics (Coming Soon)")), // Index 1: Analytics
+      const Center(child: Text("Goals (Coming Soon)")), // Index 2: Goals
+      const SettingsScreen(),  // Index 3: Settings
+    ];
+
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F7),
-      body: SafeArea(
-        child: SingleChildScrollView(
+      body: _selectedIndex == 0 
+          ? _screens[0] // Home content
+          : _screens[_selectedIndex], // New screens have their own Scaffold/SafeArea handled internally or we wrap them
+      
+      // Floating Action Button (Only for Home tab)
+      floatingActionButton: _selectedIndex == 0 ? SizedBox(
+        width: 60, 
+        height: 60,
+        child: FloatingActionButton(
+          onPressed: () {
+             Navigator.push(context, MaterialPageRoute(builder: (context) => const AiAssistantScreen()));
+          },
+          backgroundColor: const Color(0xFF1E3A8A),
+          elevation: 4,
+          shape: const CircleBorder(),
+          child: const Icon(Icons.smart_toy, color: Colors.white, size: 28),
+        ),
+      ) : null,
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+
+      bottomNavigationBar: Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20)),
+          boxShadow: [
+             BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, -2))
+          ]
+        ),
+        child: ClipRRect(
+          borderRadius: const BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20)),
+          child: BottomAppBar(
+            notchMargin: 8.0,
+            shape: const CircularNotchedRectangle(),
+            color: Colors.white,
+            elevation: 0,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _buildNavBarItem(Icons.home_filled, 'Home', 0),
+                  _buildNavBarItem(Icons.pie_chart_outline, 'Analytics', 1),
+                  const SizedBox(width: 48), // Gap for FAB
+                  _buildNavBarItem(Icons.flag_outlined, 'Goals', 2),
+                  _buildNavBarItem(Icons.settings_outlined, 'Settings', 3),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNavBarItem(IconData icon, String label, int index) {
+    final isSelected = _selectedIndex == index;
+    return GestureDetector(
+      onTap: () => setState(() => _selectedIndex = index),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            color: isSelected ? const Color(0xFF1E3A8A) : const Color(0xFF94A3B8),
+            size: 24,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: GoogleFonts.inter(
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+              color: isSelected ? const Color(0xFF1E3A8A) : const Color(0xFF94A3B8),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHomeContent() {
+    return SafeArea(
+      child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(24.0),
             child: Column(
@@ -57,15 +162,20 @@ class DashboardScreen extends StatelessWidget {
                         color: Colors.white,
                         shape: BoxShape.circle,
                       ),
-                      child: const Stack(
+                      child: Stack(
                         children: [
-                          Icon(Icons.notifications_outlined, color: Colors.black),
+                          const Icon(Icons.notifications_outlined, color: Colors.black),
                           Positioned(
                             right: 0,
                             top: 0,
-                            child: CircleAvatar(
-                              radius: 4,
-                              backgroundColor: Colors.red,
+                            child: GestureDetector(
+                              onTap: () {
+                                Navigator.push(context, MaterialPageRoute(builder: (context) => const NotificationsScreen()));
+                              },
+                              child: const CircleAvatar(
+                                radius: 4,
+                                backgroundColor: Colors.red,
+                              ),
                             ),
                           )
                         ],
@@ -77,103 +187,111 @@ class DashboardScreen extends StatelessWidget {
                 const SizedBox(height: 24),
                 
                 // Spending Card
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF1E3A8A), Color(0xFF3B82F6)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(24),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context, 
+                        MaterialPageRoute(builder: (context) => const SpendingInsightsScreen()),
+                      );
+                    },
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF1E3A8A), Color(0xFF3B82F6)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(24),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'OCTOBER SPENDING',
-                            style: GoogleFonts.inter(
-                              color: Colors.white70,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                            ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'OCTOBER SPENDING',
+                                style: GoogleFonts.inter(
+                                  color: Colors.white70,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: const Row(
+                                  children: [
+                                    Icon(Icons.trending_up, color: Colors.white, size: 14),
+                                    SizedBox(width: 4),
+                                    Text(
+                                      '+12%',
+                                      style: TextStyle(color: Colors.white, fontSize: 12),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            ],
                           ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: const Row(
+                          const SizedBox(height: 8),
+                          RichText(
+                            text: TextSpan(
+                              text: '₹42,300',
+                              style: GoogleFonts.poppins(
+                                fontSize: 32,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
                               children: [
-                                Icon(Icons.trending_up, color: Colors.white, size: 14),
-                                SizedBox(width: 4),
-                                Text(
-                                  '+12%',
-                                  style: TextStyle(color: Colors.white, fontSize: 12),
+                                TextSpan(
+                                  text: ' / ₹60k',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 14,
+                                    color: Colors.white70,
+                                    fontWeight: FontWeight.normal,
+                                  ),
                                 ),
                               ],
                             ),
-                          )
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      RichText(
-                        text: TextSpan(
-                          text: '₹42,300',
-                          style: GoogleFonts.poppins(
-                            fontSize: 32,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
                           ),
-                          children: [
-                            TextSpan(
-                              text: ' / ₹60k',
-                              style: GoogleFonts.inter(
-                                fontSize: 14,
-                                color: Colors.white70,
-                                fontWeight: FontWeight.normal,
+                          const SizedBox(height: 16),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                '70% used',
+                                style: TextStyle(color: Colors.blueAccent, fontSize: 12, fontWeight: FontWeight.bold),
                               ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text(
-                            '70% used',
-                            style: TextStyle(color: Colors.blueAccent, fontSize: 12, fontWeight: FontWeight.bold),
+                              const Text(
+                                '₹17,700 remaining',
+                                style: TextStyle(color: Colors.white, fontSize: 12),
+                              ),
+                            ],
                           ),
+                          const SizedBox(height: 8),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: const LinearProgressIndicator(
+                              value: 0.7,
+                              backgroundColor: Color(0xFF172554),
+                              color: Colors.blueAccent,
+                              minHeight: 8,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
                           const Text(
-                            '₹17,700 remaining',
-                            style: TextStyle(color: Colors.white, fontSize: 12),
+                            'You\'re on track to save ₹5,000 this month! 🎉',
+                            style: TextStyle(color: Colors.white70, fontSize: 12),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 8),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: const LinearProgressIndicator(
-                          value: 0.7,
-                          backgroundColor: Color(0xFF172554),
-                          color: Colors.blueAccent,
-                          minHeight: 8,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      const Text(
-                        'You\'re on track to save ₹5,000 this month! 🎉',
-                        style: TextStyle(color: Colors.white70, fontSize: 12),
-                      ),
-                    ],
+                    ),
                   ),
-                ),
                 
                 const SizedBox(height: 24),
                 
@@ -252,10 +370,10 @@ class DashboardScreen extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    _buildQuickAction(Icons.restaurant, 'Food', Colors.orange),
-                    _buildQuickAction(Icons.flight, 'Travel', Colors.blue),
-                    _buildQuickAction(Icons.qr_code_scanner, 'Scan & Pay', Colors.green),
-                    _buildQuickAction(Icons.receipt_long, 'Bills', Colors.purple),
+                    _buildQuickAction(context, Icons.send, 'Send', Colors.blue, null),
+                    _buildQuickAction(context, Icons.pie_chart, 'Budget', Colors.orange, const BudgetManagementScreen()),
+                    _buildQuickAction(context, Icons.message, 'SMS', Colors.green, const TransactionInsightScreen()),
+                    _buildQuickAction(context, Icons.receipt_long, 'Bills', Colors.purple, null),
                   ],
                 ),
                 
@@ -413,72 +531,65 @@ class DashboardScreen extends StatelessWidget {
                  
                  const SizedBox(height: 16),
                  
-                 _buildTransactionItem('Starbucks', 'Food & Drink • Today, 9:41 AM', '-₹350', Icons.coffee, Colors.green),
+                 _buildTransactionItem(context, 'Starbucks', 'Food & Drink • Today, 9:41 AM', '-₹350', Icons.coffee, Colors.green),
                  const SizedBox(height: 12),
-                 _buildTransactionItem('Uber Ride', 'Transport • Yesterday', '-₹120', Icons.directions_car, Colors.black),
+                 _buildTransactionItem(context, 'Uber Ride', 'Transport • Yesterday', '-₹120', Icons.directions_car, Colors.black),
                  const SizedBox(height: 12),
-                 _buildTransactionItem('Salary Credit', 'Income • 1 Oct', '+₹85,000', Icons.account_balance_wallet, Colors.blue),
+                 _buildTransactionItem(context, 'Salary Credit', 'Income • 1 Oct', '+₹85,000', Icons.account_balance_wallet, Colors.blue),
                  
                  const SizedBox(height: 80), // Fab space
               ],
             ),
           ),
         ),
-      ),
-      floatingActionButton: SizedBox(
-        width: 160,
-        child: FloatingActionButton(
-          onPressed: () {},
-          backgroundColor: const Color(0xFF1E3A8A),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.add, color: Colors.white),
-              const SizedBox(width: 8),
-              Text('Add Expense', style: GoogleFonts.inter(fontWeight: FontWeight.w600, color: Colors.white)),
-            ],
-          ),
-        ),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 
-  Widget _buildQuickAction(IconData icon, String label, Color color) {
-    return Column(
-      children: [
-        Container(
-          width: 60,
-          height: 60,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-             boxShadow: [
-               BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4)),
-             ]
-          ),
-          child: Icon(icon, color: color),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          label,
-          style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF64748B), fontWeight: FontWeight.w500),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildTransactionItem(String title, String subtitle, String amount, IconData icon, Color color) {
-    final isPositive = amount.startsWith('+');
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
+  Widget _buildQuickAction(BuildContext context, IconData icon, String label, Color color, Widget? page) {
+    return GestureDetector(
+      onTap: () {
+        if (page != null) {
+          Navigator.push(context, MaterialPageRoute(builder: (context) => page));
+        }
+      },
+      child: Column(
         children: [
+          Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+               boxShadow: [
+                 BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4)),
+               ]
+            ),
+            child: Icon(icon, color: color),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            label,
+            style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF64748B), fontWeight: FontWeight.w500),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTransactionItem(BuildContext context, String title, String subtitle, String amount, IconData icon, Color color) {
+    final isPositive = amount.startsWith('+');
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(context, MaterialPageRoute(builder: (context) => const TransactionDetailScreen()));
+      },
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(
+          children: [
           Container(
             width: 48,
             height: 48,
@@ -512,7 +623,8 @@ class DashboardScreen extends StatelessWidget {
               color: isPositive ? Colors.green : const Color(0xFF1E1E2D)
             ),
           ),
-        ],
+          ],
+        ),
       ),
     );
   }
