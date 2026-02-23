@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 // import 'package:fl_chart/fl_chart.dart';
 import 'package:final_year_project/screens/transactions_screen.dart';
-import 'package:final_year_project/screens/scan_receipt_screen.dart';
 import 'package:final_year_project/screens/budget_management_screen.dart';
 import 'package:final_year_project/screens/spending_insights_screen.dart';
 import 'package:final_year_project/screens/transaction_insight_screen.dart';
@@ -11,6 +10,9 @@ import 'package:final_year_project/screens/transaction_detail_screen.dart';
 import 'package:final_year_project/screens/notifications_screen.dart';
 import 'package:final_year_project/screens/ai_assistant_screen.dart';
 import 'package:final_year_project/screens/settings_screen.dart';
+import 'package:final_year_project/screens/profile_screen.dart';
+import 'package:provider/provider.dart';
+import 'package:final_year_project/providers/auth_provider.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -123,67 +125,79 @@ class _DashboardScreenState extends State<DashboardScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Header
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
+                Consumer<AuthProvider>(
+                  builder: (context, auth, _) {
+                    final user = auth.user;
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const CircleAvatar(
-                          radius: 20,
-                          backgroundColor: Colors.orange,
-                          child: Icon(Icons.person, color: Colors.white),
-                        ),
-                        const SizedBox(width: 12),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        Row(
                           children: [
-                            Text(
-                              'Good Morning, Rahul',
-                              style: GoogleFonts.poppins(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: const Color(0xFF1E1E2D),
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.push(context, MaterialPageRoute(builder: (context) => const ProfileScreen()));
+                              },
+                              child: CircleAvatar(
+                                radius: 20,
+                                backgroundColor: Colors.orange,
+                                child: Text(
+                                  user?.name.isNotEmpty == true ? user!.name[0].toUpperCase() : '?',
+                                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                ),
                               ),
                             ),
-                            Text(
-                              '✨ Spending 15% less this week!',
-                              style: GoogleFonts.inter(
-                                fontSize: 12,
-                                color: const Color(0xFF64748B),
-                              ),
+                            const SizedBox(width: 12),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Good Morning, ${user?.name.split(' ')[0] ?? 'User'}',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: const Color(0xFF1E1E2D),
+                                  ),
+                                ),
+                                Text(
+                                  '✨ Spending 15% less this week!',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 12,
+                                    color: const Color(0xFF64748B),
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Stack(
+                            children: [
+                              const Icon(Icons.notifications_outlined, color: Colors.black),
+                              Positioned(
+                                right: 0,
+                                top: 0,
+                                child: GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(context, MaterialPageRoute(builder: (context) => const NotificationsScreen()));
+                                  },
+                                  child: const CircleAvatar(
+                                    radius: 4,
+                                    backgroundColor: Colors.red,
+                                  ),
+                                ),
+                              )
+                            ],
+                          ),
+                        ),
                       ],
-                    ),
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Stack(
-                        children: [
-                          const Icon(Icons.notifications_outlined, color: Colors.black),
-                          Positioned(
-                            right: 0,
-                            top: 0,
-                            child: GestureDetector(
-                              onTap: () {
-                                Navigator.push(context, MaterialPageRoute(builder: (context) => const NotificationsScreen()));
-                              },
-                              child: const CircleAvatar(
-                                radius: 4,
-                                backgroundColor: Colors.red,
-                              ),
-                            ),
-                          )
-                        ],
-                      ),
-                    ),
-                  ],
+                    );
+                  },
                 ),
-                
                 const SizedBox(height: 24),
                 
                 // Spending Card

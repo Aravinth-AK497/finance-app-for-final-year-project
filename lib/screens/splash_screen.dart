@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import 'package:final_year_project/providers/auth_provider.dart';
 import 'package:final_year_project/screens/language_selection_screen.dart';
+import 'package:final_year_project/screens/dashboard_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -14,14 +17,37 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(seconds: 2), () {
+    _checkAuthAndNavigate();
+  }
+
+  Future<void> _checkAuthAndNavigate() async {
+    await Future.delayed(const Duration(seconds: 2));
+    if (!mounted) return;
+
+    try {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final isLoggedIn = await authProvider.checkAuthStatus();
+
+      if (!mounted) return;
+
       Navigator.pushReplacement(
-        // ignore: use_build_context_synchronously
+        context,
+        MaterialPageRoute(
+          builder: (context) =>
+              isLoggedIn ? const DashboardScreen() : const LanguageSelectionScreen(),
+        ),
+      );
+    } catch (e) {
+      debugPrint("Splash Auth Check Failed: $e");
+      if (!mounted) return;
+      // Fallback to Language Selection (Login flow)
+      Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const LanguageSelectionScreen()),
       );
-    });
+    }
   }
+
 
   @override
   Widget build(BuildContext context) {

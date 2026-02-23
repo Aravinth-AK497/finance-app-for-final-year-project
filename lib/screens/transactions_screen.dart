@@ -1,8 +1,111 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:final_year_project/widgets/add_transaction_sheet.dart';
 
-class TransactionsScreen extends StatelessWidget {
+class TransactionsScreen extends StatefulWidget {
   const TransactionsScreen({super.key});
+
+  @override
+  State<TransactionsScreen> createState() => _TransactionsScreenState();
+}
+
+class _TransactionsScreenState extends State<TransactionsScreen> {
+  // Initial Hardcoded Data simulating a real state
+  final List<Map<String, dynamic>> _transactions = [
+    {
+      'title': 'Starbucks Coffee',
+      'subtitle': '10:30 AM • Apple Pay',
+      'amount': -5.40,
+      'type': 'Expense',
+      'category': 'Food',
+      'date': DateTime.now().subtract(const Duration(hours: 4)),
+    },
+    {
+      'title': 'Uber Ride',
+      'subtitle': '08:45 AM • Visa ••4242',
+      'amount': -24.50,
+      'type': 'Expense',
+      'category': 'Transport',
+      'date': DateTime.now().subtract(const Duration(hours: 6)),
+    },
+    {
+      'title': 'Freelance Project',
+      'subtitle': 'Yesterday • Bank Transfer',
+      'amount': 1200.00,
+      'type': 'Income',
+      'category': 'Work',
+      'date': DateTime.now().subtract(const Duration(days: 1)),
+    },
+     {
+      'title': 'Whole Foods Market',
+      'subtitle': 'Yesterday • Apple Pay',
+      'amount': -80.00,
+      'type': 'Expense',
+      'category': 'Shopping',
+      'date': DateTime.now().subtract(const Duration(days: 1)),
+    },
+  ];
+
+  void _addNewTransaction() async {
+    final newTransaction = await showModalBottomSheet<Map<String, dynamic>>(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => const AddTransactionSheet(),
+    );
+
+    if (newTransaction != null) {
+      setState(() {
+        final amount = newTransaction['amount'] as double;
+        final isExpense = newTransaction['type'] == 'Expense';
+        
+        _transactions.insert(0, {
+          'title': newTransaction['title'],
+          'subtitle': 'Just now • Cash', // Placeholder for subtitle logic
+          'amount': isExpense ? -amount : amount,
+          'type': newTransaction['type'],
+          'category': newTransaction['category'],
+          'date': DateTime.now(),
+        });
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Transaction Added: ${newTransaction['title']}'),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: const Color(0xFF1E3A8A),
+          ),
+        );
+      }
+    }
+  }
+
+  IconData _getCategoryIcon(String category) {
+    switch (category) {
+      case 'Food': return Icons.restaurant;
+      case 'Transport': return Icons.directions_car;
+      case 'Work': return Icons.work;
+      case 'Shopping': return Icons.shopping_cart;
+      case 'Entertainment': return Icons.movie;
+      case 'Health': return Icons.medical_services;
+      default: return Icons.category;
+    }
+  }
+
+  Color _getCategoryColor(String category) {
+    switch (category) {
+      case 'Food': return Colors.blue;
+      case 'Transport': return Colors.lightBlue;
+      case 'Work': return Colors.green;
+      case 'Shopping': return Colors.purple;
+      case 'Entertainment': return Colors.orange;
+      case 'Health': return Colors.red;
+      default: return Colors.grey;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +119,7 @@ class TransactionsScreen extends StatelessWidget {
         backgroundColor: const Color(0xFFF5F5F7),
         elevation: 0,
         centerTitle: false,
-        automaticallyImplyLeading: false,
+         automaticallyImplyLeading: false,
         actions: [
           IconButton(icon: const Icon(Icons.search, color: Colors.black), onPressed: () {}),
           IconButton(icon: const Icon(Icons.filter_list, color: Colors.black), onPressed: () {}),
@@ -25,7 +128,7 @@ class TransactionsScreen extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            Padding(
+             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
               child: Container(
                 padding: const EdgeInsets.all(4),
@@ -47,7 +150,8 @@ class TransactionsScreen extends StatelessWidget {
             ),
             
             const SizedBox(height: 24),
-            
+
+            // Summary (Static for now, but could be dynamic)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
               child: Row(
@@ -56,74 +160,49 @@ class TransactionsScreen extends StatelessWidget {
                   Row(
                     children: [
                       Text(
-                        'October 2023',
+                        'Recent Transactions',
                         style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w600, color: const Color(0xFF1E1E2D)),
                       ),
-                      const SizedBox(width: 4),
-                      const Icon(Icons.keyboard_arrow_down, size: 20),
                     ],
                   ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: Colors.grey.shade200),
-                    ),
-                    child: const Text('Total: -\$2,450.00', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
-                  ),
                 ],
               ),
             ),
-            
+
             const SizedBox(height: 16),
             
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
-              child: SizedBox(
-                height: 40,
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  children: [
-                     _buildCategoryChip('All Categories', true, Icons.category),
-                     const SizedBox(width: 12),
-                     _buildCategoryChip('Food', false, Icons.restaurant),
-                     const SizedBox(width: 12),
-                     _buildCategoryChip('Transport', false, Icons.directions_car),
-                  ],
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
             Expanded(
-              child: ListView(
+              child: ListView.builder(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
-                children: [
-                  _buildDateHeader('TODAY', '-\$29.90'),
-                  const SizedBox(height: 12),
-                  _buildTransactionItem('Starbucks Coffee', '10:30 AM • Apple Pay', '- \$5.40', Icons.coffee, Colors.blue.shade100, Colors.blue),
-                  const SizedBox(height: 12),
-                  _buildTransactionItem('Uber Ride', '08:45 AM • Visa ••4242', '- \$24.50', Icons.directions_bus, Colors.lightBlue.shade100, Colors.lightBlue),
-                  
-                  const SizedBox(height: 24),
-                  
-                  _buildDateHeader('YESTERDAY', '+\$1,120.00'),
-                  const SizedBox(height: 12),
-                  _buildTransactionItem('Freelance Project', '09:00 AM • Bank Transfer', '+\$1,200.00', Icons.work, Colors.green.shade100, Colors.green, isPositive: true),
-                  const SizedBox(height: 12),
-                  _buildTransactionItem('Whole Foods Market', '06:30 PM • Apple Pay', '- \$80.00', Icons.shopping_cart, Colors.purple.shade100, Colors.purple),
-                  
-                  const SizedBox(height: 80),
-                ],
+                itemCount: _transactions.length,
+                itemBuilder: (ctx, index) {
+                  final tx = _transactions[index];
+                  final isPositive = (tx['amount'] as double) > 0;
+                  final categoryColor = _getCategoryColor(tx['category']);
+                  final formattedAmount = isPositive 
+                      ? '+\$${(tx['amount'] as double).abs().toStringAsFixed(2)}' 
+                      : '-\$${(tx['amount'] as double).abs().toStringAsFixed(2)}';
+
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12.0),
+                    child: _buildTransactionItem(
+                      tx['title'], 
+                      tx['subtitle'], 
+                      formattedAmount, 
+                      _getCategoryIcon(tx['category']), 
+                      categoryColor.withOpacity(0.2), 
+                      categoryColor, 
+                      isPositive: isPositive
+                    ),
+                  );
+                },
               ),
             ),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: _addNewTransaction,
         backgroundColor: const Color(0xFF3B82F6), // Brighter Blue
         child: const Icon(Icons.add, color: Colors.white),
       ),
@@ -146,38 +225,6 @@ class TransactionsScreen extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildCategoryChip(String text, bool isActive, IconData icon) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: isActive ? const Color(0xFF1E3A8A) : Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: isActive ? Colors.transparent : Colors.grey.shade200),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, size: 16, color: isActive ? Colors.white : const Color(0xFF64748B)),
-          const SizedBox(width: 8),
-          Text(text, style: TextStyle(color: isActive ? Colors.white : const Color(0xFF64748B), fontWeight: FontWeight.w500)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDateHeader(String date, String amount) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(date, style: GoogleFonts.inter(fontWeight: FontWeight.w600, color: const Color(0xFF94A3B8), fontSize: 12)),
-        Container(
-           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-           decoration: BoxDecoration(color: Colors.grey.shade200, borderRadius: BorderRadius.circular(12)),
-          child: Text(amount, style: GoogleFonts.inter(fontWeight: FontWeight.w600, color: const Color(0xFF64748B), fontSize: 12)),
-        )
-      ],
     );
   }
 
